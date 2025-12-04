@@ -227,6 +227,7 @@ spark.sparkContext.parallelize(Seq(1,2,3)).toDF()
 
 # COMMAND ----------
 
+# DBTITLE 1,FlightsDf Defined
 flightsDf = spark.read.format("json").load("/Workspace/Users/sak@cebs.io/2015-summary.json")
 flightsDf.show(5)
 
@@ -239,7 +240,7 @@ flightsDf.schema
 manualSchema = T.StructType([
     T.StructField("DEST_COUNTRY_NAME", T.StringType(), True),
     T.StructField("ORIGIN_COUNTRY_NAME", T.StringType(), True),
-    T.StructField('CoUnt', T.LongType(), False, metadata={"hello":"world"})
+    T.StructField('Count', T.LongType(), False, metadata={"hello":"world"})
 ])
 
 # COMMAND ----------
@@ -249,6 +250,67 @@ flightsDf = spark.read.format('json').schema(manualSchema).load("/Workspace/User
 # COMMAND ----------
 
 flightsDf.show(5)
+
+# COMMAND ----------
+
+flightsDf.columns
+
+# COMMAND ----------
+
+flightsDf.first()
+
+# COMMAND ----------
+
+type(flightsDf.first()[1])
+
+# COMMAND ----------
+
+flightsDf.createOrReplaceTempView("flights_view")
+
+# COMMAND ----------
+
+flightsDf.select('ORIGIN_COUNTRY_NAME', 'Count').show(7)
+
+# COMMAND ----------
+
+flightsDf.selectExpr(
+"*",
+"(ORIGIN_COUNTRY_NAME=DEST_COUNTRY_NAME) as IN_COUNTRY",
+"Count > 10 as oof"
+).show(5)
+
+# COMMAND ----------
+
+flightsDf.selectExpr("avg(count)", "count(distinct(DEST_COUNTRY_NAME))").first()[0]
+
+# COMMAND ----------
+
+flightsDf.selectExpr(
+
+    "*",
+    "(ORIGIN_COUNTRY_NAME=DEST_COUNTRY_NAME) as IN_COUNTRY",
+    "Count > 10 as oof",
+    "'bruh' as tis_but_a_test_literal"
+
+).show()
+
+# COMMAND ----------
+
+# DBTITLE 1,Changing Columns using selectExpr()
+#Changing Columns using selectExpr()
+flightsDf.selectExpr(
+    "(ORIGIN_COUNTRY_NAME=DEST_COUNTRY_NAME) as IN_COUNTRY",
+    "'bruh' as tis_the_same_test_literal"
+)
+
+# COMMAND ----------
+
+# DBTITLE 1,Changing Columns using withColumn()
+#Changing Columns using withColumn()
+flightsDf\
+    .withColumn("IN_COUNTRY", flightsDf.ORIGIN_COUNTRY_NAME==flightsDf.DEST_COUNTRY_NAME)\
+    .withColumn("tis_the_same_test_literal", F.lit("bruh"))\
+    .show()
 
 # COMMAND ----------
 
