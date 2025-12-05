@@ -245,6 +245,7 @@ manualSchema = T.StructType([
 
 # COMMAND ----------
 
+
 flightsDf = spark.read.format('json').schema(manualSchema).load("/Workspace/Users/sak@cebs.io/2015-summary.json")
 
 # COMMAND ----------
@@ -281,6 +282,8 @@ flightsDf.selectExpr(
 
 # COMMAND ----------
 
+
+
 flightsDf.selectExpr("avg(count)", "count(distinct(DEST_COUNTRY_NAME))").first()[0]
 
 # COMMAND ----------
@@ -292,7 +295,7 @@ flightsDf.selectExpr(
     "Count > 10 as oof",
     "'bruh' as tis_but_a_test_literal"
 
-).show()
+).take(4)
 
 # COMMAND ----------
 
@@ -311,6 +314,75 @@ flightsDf\
     .withColumn("IN_COUNTRY", flightsDf.ORIGIN_COUNTRY_NAME==flightsDf.DEST_COUNTRY_NAME)\
     .withColumn("tis_the_same_test_literal", F.lit("bruh"))\
     .show()
+
+# COMMAND ----------
+
+flightsDf \
+    .withColumnRenamed('ORIGIN_COUNTRY_NAME', 'renamed_this_column') \
+    .where("renamed_this_column = 'Gibraltar'") \
+    .show()
+
+# COMMAND ----------
+
+flightsDf \
+    .filter(F.col('Count').isNull()) \
+    .withColumn('countAsBool', F.col('Count').cast('Boolean')) \
+    .show()
+
+# COMMAND ----------
+
+flightsDf.drop("DEST_COUNTRY_NAME").schema
+
+# COMMAND ----------
+
+flightsDf.withColumn('Count', F.col('Count').cast("long")).schema
+
+# COMMAND ----------
+
+flightsDf.select("ORIGIN_COUNTRY_NAME").distinct().orderBy("ORIGIN_COUNTRY_NAME", ascending = False).show()
+
+# COMMAND ----------
+
+flightsDf.sample(True, 0.05, 5).show()
+
+# COMMAND ----------
+
+splitDf = flightsDf.randomSplit([0.2, 0.8], 5)
+
+# COMMAND ----------
+
+splitDf
+
+# COMMAND ----------
+
+splitDf[0].count() > splitDf[1].count()
+
+# COMMAND ----------
+
+flightsDf.rdd.id()
+
+# COMMAND ----------
+
+splitDf[1].orderBy(F.col("DEST_COUNTRY_NAME").desc(), F.col("ORIGIN_COUNTRY_NAME")).show()
+
+# COMMAND ----------
+
+splitDf[1].sort(F.desc_nulls_last(F.col("DEST_COUNTRY_NAME"))).show()
+
+# COMMAND ----------
+
+splitDf[1].sortWithinPartitions("DEST_COUNTRY_NAME", ascending = False).show()
+
+# COMMAND ----------
+
+splitDf[1].repartition(5)
+
+# COMMAND ----------
+
+splitDf[1] \
+    .repartition(1000, F.col("DEST_COUNTRY_NAME")) \
+    .coalesce(50) \
+    .show(5, 10, False)
 
 # COMMAND ----------
 
