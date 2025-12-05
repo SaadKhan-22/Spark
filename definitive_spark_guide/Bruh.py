@@ -380,6 +380,7 @@ splitDf[1].repartition(5)
 # COMMAND ----------
 # Repartitions by a column into a 1000 partitions
 # then coalesces into 50 partitions
+# show 5 records, truncate all strings with length >= 10, format each record vertically = False
 splitDf[1] \
     .repartition(1000, F.col("DEST_COUNTRY_NAME")) \
     .coalesce(50) \
