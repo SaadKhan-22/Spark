@@ -4,7 +4,6 @@
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
 
-
 # COMMAND ----------
 
 spark
@@ -378,6 +377,7 @@ splitDf[1].sortWithinPartitions("DEST_COUNTRY_NAME", ascending = False).show()
 splitDf[1].repartition(5)
 
 # COMMAND ----------
+
 # Repartitions by a column into a 1000 partitions
 # then coalesces into 50 partitions
 # show 5 records, truncate all strings with length >= 10, format each record vertically = False
@@ -385,6 +385,96 @@ splitDf[1] \
     .repartition(1000, F.col("DEST_COUNTRY_NAME")) \
     .coalesce(50) \
     .show(5, 10, False)
+
+# COMMAND ----------
+
+flightsDf.describe().display()
+
+# COMMAND ----------
+
+flightsDf \
+    .select(F.initcap(F.col("DEST_COUNTRY_NAME")).alias("Each word caps"),
+    F.upper(F.col("DEST_COUNTRY_NAME")).alias("All caps"),
+    F.lower(F.col("DEST_COUNTRY_NAME")).alias("No caps")) \
+    .show()
+
+
+# COMMAND ----------
+
+flightsDf.select(
+ F.ltrim(F.lit(" HELLO ")).alias("ltrim"),
+ F.rtrim(F.lit(" HELLO ")).alias("rtrim"),
+ F.trim(F.lit(" HELLO ")).alias("trim"),
+ F.lpad(F.lit("HELLO"), 3, " ").alias("lp"),
+ F.rpad(F.lit("HELLO"), 3, " ").alias("rp")).show(2)
+
+
+# COMMAND ----------
+
+extract_str = "(Un|Se|t)"
+flightsDf.select(
+ F.regexp_extract(F.col("DEST_COUNTRY_NAME"), extract_str, 1).alias("MODIFIED_DEST_COUNTRY_NAME"),
+ F.col("DEST_COUNTRY_NAME")).show(20)
+
+
+# COMMAND ----------
+
+bruh = ['a', 'b', 3]
+iter_over_bruh = iter(bruh)
+
+# COMMAND ----------
+
+one, two, three = *iter_over_bruh
+
+# COMMAND ----------
+
+# DBTITLE 1,DateDF Defined
+dateDF = spark.range(25) \
+        .withColumn("today", F.current_date()) \
+        .withColumn("now", F.current_timestamp())
+
+# COMMAND ----------
+
+dateDF \
+    .select(F.date_sub(F.col("today"), 5),
+            F.date_add(F.col("today"), 5)) \
+.show(5)
+
+# COMMAND ----------
+
+dateDF.printSchema()
+
+# COMMAND ----------
+
+dateDF \
+    .withColumn('bidaya', F.to_date(F.lit("2016-10-01"))) \
+    .withColumn('nihaya', F.to_date(F.lit("2018-09-06"))) \
+    .select(F.datediff(F.col('nihaya'), F.col('bidaya'))) \
+    .show()
+
+# COMMAND ----------
+
+dateDF.printSchema()
+
+# COMMAND ----------
+
+dateDF = dateDF.withColumn('yet_another_literal', F.lit(8))
+
+# COMMAND ----------
+
+def third_power(val_from_Df):
+    return val_from_Df ** 3
+
+# register it with Spark as a UDF
+third_power_udf = F.udf(third_power)
+
+# COMMAND ----------
+
+dateDF.withColumn('cubed', third_power(dateDF['yet_another_literal'])).show()
+
+# COMMAND ----------
+
+dateDF.withColumn('cubed_with_udf', third_power_udf(F.col('yet_another_literal'))).show()
 
 # COMMAND ----------
 
