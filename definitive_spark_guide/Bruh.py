@@ -2,6 +2,7 @@
 # DBTITLE 1,Import statements
 #from pyspark import *
 import pyspark.sql.functions as F
+import pyspark.sql.window as W
 import pyspark.sql.types as T
 
 # COMMAND ----------
@@ -475,6 +476,65 @@ dateDF.withColumn('cubed', third_power(dateDF['yet_another_literal'])).show()
 # COMMAND ----------
 
 dateDF.withColumn('cubed_with_udf', third_power_udf(F.col('yet_another_literal'))).show()
+
+# COMMAND ----------
+
+# DBTITLE 1,Retail Df Defined
+retailDf= spark.read.format("csv") \
+    .option("header", "true") \
+    .option("inferSchema", "true") \
+    .load("/Workspace/Users/sak@cebs.io/by-day/*") \
+    .coalesce(5)
+
+# COMMAND ----------
+
+retailDf.show(3)
+retailDf.createOrReplaceTempView('retail_table')
+
+# COMMAND ----------
+
+retailDf.select(F.countDistinct('StockCode')).show()
+
+# COMMAND ----------
+
+retailDf.select(F.approx_count_distinct('StockCode', 0.01)).show()
+
+# COMMAND ----------
+
+retailDf.select(F.sum('Quantity')).show()
+
+# COMMAND ----------
+
+retailDf.groupBy("InvoiceNo", "CustomerID").count().show()
+
+# COMMAND ----------
+
+retailDfMod = retailDf.withColumn("date_of_invoice", F.to_date(F.col("InvoiceDate"))) \
+            .select(F.col("date_of_invoice"), F.col("InvoiceDate"))
+
+# COMMAND ----------
+
+khirki = W.Window \
+    .partitionBy("date_of_invoice") \
+    .orderBy("date_of_invoice") \
+    .rowsBetween(W.Window.unboundedPreceding, W.Window.currentRow)
+
+# COMMAND ----------
+
+invoiceKhirki = F.max(F.col("Quantity")).over(khirki)
+
+# COMMAND ----------
+
+purchaseDenseRank = F.dense_rank().over(khirki)
+purchaseRank = F.rank().over(khirki)
+
+# COMMAND ----------
+
+retailDfMod.select(
+    F.col('date_of_invoice'),
+    purchaseDenseRank.alias('dense_ranked_purchases'),
+    purchaseRank.alias('ranked_purchases')
+).show()
 
 # COMMAND ----------
 
