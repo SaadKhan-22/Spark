@@ -10,4 +10,4 @@ Contains Useful Spark Code
 ## Notes:
 - ### 3 Ways Spark went against Conventional Wisdom:
   - **Adding SQL on top of Spark** gave the ability for in-memory, low-latency, general graphs of MapReduce operations, essentially giving the best of both worlds (i.e., Conventional DBs and MPPs). It also gave mid-query fault tolerance which could tolerate changes (to a degree) in the cluster's hardware. 
-  - **One Size fits All** was a philosophy considered outdated at the time (consider that the Cloud was not as ubiquitous then as it now is).
+  - **One Size fits All** was a philosophy considered outdated at the time (consider that the Cloud was not as ubiquitous then as it now is). The trend was heading in the direction of specialised systems for different programming models.
