@@ -9,4 +9,4 @@ Contains Useful Spark Code
 
 ## Notes:
 - ### 3 Ways Spark went against Conventional Wisdom:
-  - Adding SQL on top of Spark gave the ability for in-memory, low-latency, general graphs of MapReduce operations.
+  - Adding SQL on top of Spark gave the ability for in-memory, low-latency, general graphs of MapReduce operations, essentially giving the best of both worlds (i.e., Conventional DBs and MPPs). It also gave mid-query fault tolerance which could tolerate changes (to a degree) in the cluster's hardware. 
