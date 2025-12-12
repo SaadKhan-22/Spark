@@ -9,4 +9,4 @@ Contains Useful Spark Code
 
 ## Notes:
 - ### 3 Ways Spark went against Conventional Wisdom:
-  - Spark and it's early peers 
+  - Adding SQL on top of Spark gave the ability for in-memory, low-latency, general graphs of MapReduce operations.
