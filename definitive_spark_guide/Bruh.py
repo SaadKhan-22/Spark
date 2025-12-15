@@ -579,8 +579,11 @@ person.join(graduateProgram, leftJoinExpression, 'right' ).show()
 person.join(graduateProgram, leftJoinExpression, 'cross' ).show()
 
 """
-#person.join(graduateProgram, leftJoinExpression, 'cross' ).count()
-person.crossJoin(graduateProgram).count()
+person.join(graduateProgram, leftJoinExpression, 'left' ).count()
+
+#CROSS JOINs require an explicit function call
+#person.crossJoin(graduateProgram).count()
 
 # COMMAND ----------
 
+person.join(F.broadcast(graduateProgram), leftJoinExpression, 'left' ).explain()
